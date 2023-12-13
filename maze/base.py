@@ -57,31 +57,6 @@ class Maze:
 		self.map[self.beginPoint[0]][self.beginPoint[1]] = 'S'
 		self.map[self.endPoint[0]][self.endPoint[1]] = 'T'
 	
-	def visualize(self, screenWidth: int, screenHeight: int, blockWidth: int) -> None:
-		screenHeight = max(screenHeight, self.rowNumber * blockWidth)
-		screenWidth = max(screenWidth, self.columnNumber * blockWidth)
-
-		pygame.init()
-		self.screen = pygame.display.set_mode([screenWidth, screenHeight])
-		pygame.display.set_caption("Maze Visualizer", icontitle = "Maze Visualizer")
-
-		block = []
-
-		for i in range(self.rowNumber):
-			for j in range(self.columnNumber):
-				if self.map[i][j] == '#':
-					block.append(((255, 255, 255), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
-				elif self.map[i][j] == 'S':
-					block.append(((255, 0, 0), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
-				elif self.map[i][j] == 'T':
-					block.append(((0, 255, 0), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
-		
-		random.shuffle(block)
-		
-		for i in block:
-			self.screen.fill(i[0], i[1])
-			pygame.display.flip()
-	
 	def throwHitWallException(self) -> None:
 		"""
 		report hit wall msg on visualizer
