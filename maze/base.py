@@ -37,17 +37,46 @@ class Maze:
 				map[pX * 2 + 1][pY * 2 + 2] = '.'
 			else:
 				map[pX * 2 + 2][pY * 2 + 1] = '.'
+		
+		for x in range(1, rowNumber):
+			for y in range(1, columnNumber):
+				countPlain = [map[2 * x - 1][2 * y - 1], map[2 * x + 1][2 * y - 1], map[2 * x + 1][2 * y + 1], map[2 * x - 1][2 * y + 1]]
+				countPlain = countPlain.count('.')
+				if countPlain > 3:
+					map[2 * x][2 * y] = '.'
 				
 		self.map = map
 		self.columnNumber = 2 * columnNumber + 1
 		self.rowNumber = 2 * rowNumber + 1
 		self.beginPoint = ((beginPoint // columnNumber) * 2 + 1, (beginPoint % columnNumber) * 2 + 1)
 		self.endPoint = ((endPoint // columnNumber) * 2 + 1, (endPoint % columnNumber) * 2 + 1)
+		self.map[self.beginPoint[0]][self.beginPoint[1]] = 'S'
+		self.map[self.endPoint[0]][self.endPoint[1]] = 'T'
 			
-	def visualize(self, screenWidth: int, screenHeight: int):
+	def visualize(self, screenWidth: int, screenHeight: int, blockWidth: int):
+		screenHeight = max(screenHeight, self.rowNumber * blockWidth)
+		screenWidth = max(screenWidth, self.columnNumber * blockWidth)
+
 		pygame.init()
-		screen = pygame.display.set_mode([640, 480])
+		screen = pygame.display.set_mode([screenWidth, screenHeight])
 		pygame.display.set_caption("Maze Visualizer", icontitle = "Maze Visualizer")
+
+		block = []
+
+		for i in range(self.rowNumber):
+			for j in range(self.columnNumber):
+				if self.map[i][j] == '#':
+					block.append(((255, 255, 255), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
+				elif self.map[i][j] == 'S':
+					block.append(((255, 0, 0), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
+				elif self.map[i][j] == 'T':
+					block.append(((0, 255, 0), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
+		
+		random.shuffle(block)
+		
+		for i in block:
+			screen.fill(i[0], i[1])
+			pygame.display.flip()
 
 		running = True
 		while running:
