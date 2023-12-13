@@ -1,9 +1,12 @@
 from .dsu import *
 import random
 import pygame
+import threading
 
 class Maze:
+
 	def __init__(self, rowNumber: int, columnNumber: int, minimumEdgeNumber: int):
+		
 		D = Dsu(rowNumber * columnNumber)
 		alternativeEdge = {(i, i + 1) for i in range(rowNumber * columnNumber) if i % columnNumber != columnNumber - 1} \
 			| {(i, i + columnNumber) for i in range(rowNumber * columnNumber) if i // columnNumber != rowNumber - 1}
@@ -53,13 +56,13 @@ class Maze:
 		self.curPoint = self.beginPoint
 		self.map[self.beginPoint[0]][self.beginPoint[1]] = 'S'
 		self.map[self.endPoint[0]][self.endPoint[1]] = 'T'
-			
-	def visualize(self, screenWidth: int, screenHeight: int, blockWidth: int):
+	
+	def visualize(self, screenWidth: int, screenHeight: int, blockWidth: int) -> None:
 		screenHeight = max(screenHeight, self.rowNumber * blockWidth)
 		screenWidth = max(screenWidth, self.columnNumber * blockWidth)
 
 		pygame.init()
-		screen = pygame.display.set_mode([screenWidth, screenHeight])
+		self.screen = pygame.display.set_mode([screenWidth, screenHeight])
 		pygame.display.set_caption("Maze Visualizer", icontitle = "Maze Visualizer")
 
 		block = []
@@ -76,15 +79,8 @@ class Maze:
 		random.shuffle(block)
 		
 		for i in block:
-			screen.fill(i[0], i[1])
+			self.screen.fill(i[0], i[1])
 			pygame.display.flip()
-
-		# running = True
-		# while running:
-		# 	for event in pygame.event.get():
-		# 		if event.type == pygame.QUIT:
-		# 			running = False
-		# pygame.quit()
 	
 	def throwHitWallException(self) -> None:
 		"""
@@ -94,7 +90,7 @@ class Maze:
 	
 	def throwNotStoppingAtTheEndException(self) -> None:
 		"""
-		report not stoppint at the end msg on visualizer
+		report not stopping at the end msg on visualizer
 		"""
 		print("You didn't stop at the end.")
 
@@ -102,4 +98,3 @@ class Maze:
 		if direction not in ["up", "down", "left", "right"]:
 			raise Exception("Wrong direction given to Maze.move() method.")
 	
-	def 
