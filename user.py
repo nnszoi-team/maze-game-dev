@@ -1,5 +1,8 @@
 import interact
+import time
 
-def run(M: interact.MazeInteract):
-    M.moveDown()
-    pass
+def main(M: interact.InteractMaze):
+	print("main()))))))")
+	while True:
+		pass
+	print("okokokko")

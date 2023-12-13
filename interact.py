@@ -1,18 +1,16 @@
 import maze
+import os
 
-class MazeInteract:
-	def __init__(self, original: maze.Maze) -> None:
+class InteractMaze:
+	def __init__(self, original: maze.Maze, pipeFileobject) -> None:
 		self.__rowNumber = original.rowNumber
 		self.__columnNumber = original.columnNumber
 		self.__map = original.map
 		self.__beginPoint = original.beginPoint
 		self.__currentPoint = original.beginPoint
 		self.__endPoint = original.endPoint
-		self.__operation = []
+		self.__pipeFile = pipeFileobject
 		pass
-
-	def seekOperation(self) -> []:
-		return self.__operation
 
 	def seekCoordinate(self, x: int, y: int) -> str:
 		"""Return the state of the point at coordinate (x, y).
@@ -93,7 +91,7 @@ class MazeInteract:
 		if self.seekLeft() == '#':
 			return (False, self.currentPoint[0], self.currentPoint[1])
 		else:
-			self.__operation.append("left")
+			self.__pipeFile.write("l")
 			self.currentPoint[1] -= 1
 			return (True, self.currentPoint[0], self.currentPoint[1])
 
@@ -107,7 +105,7 @@ class MazeInteract:
 		if self.seekRight() == '#':
 			return (False, self.currentPoint[0], self.currentPoint[1])
 		else:
-			self.__operation.append("right")
+			self.__pipeFile.write("r")
 			self.currentPoint[1] += 1
 			return (True, self.currentPoint[0], self.currentPoint[1])
 
@@ -121,7 +119,7 @@ class MazeInteract:
 		if self.seekLeft() == '#':
 			return (False, self.currentPoint[0], self.currentPoint[1])
 		else:
-			self.__operation.append("up")
+			self.__pipeFile.write("u")
 			self.currentPoint[0] -= 1
 			return (True, self.currentPoint[0], self.currentPoint[1])
 
@@ -135,7 +133,7 @@ class MazeInteract:
 		if self.seekLeft() == '#':
 			return (False, self.currentPoint[0], self.currentPoint[1])
 		else:
-			self.__operation.append("down")
+			self.__pipeFile.write("d")
 			self.currentPoint[0] += 1
 			return (True, self.currentPoint[0], self.currentPoint[1])
 
