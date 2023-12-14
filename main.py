@@ -2,13 +2,14 @@ from maze import Maze
 import pygame
 import random
 import threading
-import visualize
-import movement
+import graphix.visualize as visualize
+import graphix.movement as movement
 import signal
 import user
 import interact
 import multiprocessing
 import time
+from reloading import reloading
 
 maze = Maze(50, 50, 0)
 screenWidth = 0
