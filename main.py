@@ -1,16 +1,13 @@
-from maze import Maze
+from maze import *
 from graphix import *
-import pygame
-import user
-import interact
-import multiprocessing
-from reloading import reloading
+import pygame, multiprocessing
+import user, interactor, importlib
 
-maze = Maze(50, 50, 0)
+maze = Maze(30, 30, 0)
 screenWidth = 0
 screenHeight = 0
-blockWidth = 5
-screenHeight = max(screenHeight, maze.rowNumber * blockWidth)
+blockWidth = 10
+screenHeight = max(screenHeight, maze.rowNumber * blockWidth) + 30
 screenWidth = max(screenWidth, maze.columnNumber * blockWidth)
 caption = "Maze Visualizer"
 
@@ -21,16 +18,19 @@ pygame.display.set_caption(caption, icontitle = caption)
 visualize(maze, blockWidth, screen)
 
 running = True
-TIMEOUT_SECONDS = 1
+TIMEOUT_SECONDS = 4
+FPS = 30
 
 while running:
+	pygame.time.Clock().tick(FPS)
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
 		elif event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_a:
+				importlib.reload(user)
 				print("Start running user's function to solve a maze")
-				userProcess = multiprocessing.Process(target = user.main, args = [interact.InteractMaze(maze, open("pipe.txt", "w"))])
+				userProcess = multiprocessing.Process(target = user.main, args = [interactor.Interactor(maze, open("pipe.txt", "w"))])
 				userProcess.daemon = True
 				userProcess.start()
 				userProcess.join(timeout = TIMEOUT_SECONDS)
@@ -40,6 +40,5 @@ while running:
 					print("Timeout!")
 				else:
 					print("normal")
-					pass
 
 pygame.quit()

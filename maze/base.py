@@ -2,7 +2,8 @@ from .dsu import *
 import random
 
 class Maze:
-
+	"""Construct the maze by Randomized Kruscal Algorithm.
+	"""
 	def __init__(self, rowNumber: int, columnNumber: int, minimumEdgeNumber: int):
 		
 		D = Dsu(rowNumber * columnNumber)

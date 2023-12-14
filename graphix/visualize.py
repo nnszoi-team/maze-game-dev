@@ -1,11 +1,10 @@
-from collections.abc import Callable, Iterable, Mapping
-from typing import Any
 from maze import Maze
-import threading
 import random
 import pygame
 
 def visualize(maze: Maze, blockWidth: int, screen: pygame.Surface):
+	"""Visualize the maze using pygame lib.
+	"""
 	block = []
 
 	for i in range(maze.rowNumber):
@@ -24,7 +23,7 @@ def visualize(maze: Maze, blockWidth: int, screen: pygame.Surface):
 			screen.fill(i[0], i[1])
 		except pygame.error:
 			break
-	pygame.display.flip()
+		pygame.display.flip()
 
 	pass
 

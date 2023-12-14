@@ -1,9 +1,5 @@
-from reloading import reloading
-import interact
-import time
+from interactor import *
 
-@reloading
-def main(M: interact.InteractMaze):
+def main(M: Interactor):
 	print("main()))")
-	time.sleep(0.5)
 	print("okokokko")

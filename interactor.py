@@ -1,7 +1,7 @@
 import maze
 import os
 
-class InteractMaze:
+class Interactor:
 	def __init__(self, original: maze.Maze, pipeFileobject) -> None:
 		self.__rowNumber = original.rowNumber
 		self.__columnNumber = original.columnNumber
