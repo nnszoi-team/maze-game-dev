@@ -1,7 +1,5 @@
 from .dsu import *
 import random
-import pygame
-import threading
 
 class Maze:
 

@@ -10,6 +10,7 @@ class InteractMaze:
 		self.__currentPoint = original.beginPoint
 		self.__endPoint = original.endPoint
 		self.__pipeFile = pipeFileobject
+		print(self.__beginPoint, self.__currentPoint, self.__endPoint)
 		pass
 
 	def seekCoordinate(self, x: int, y: int) -> str:
@@ -21,14 +22,6 @@ class InteractMaze:
 			return "-"
 		else:
 			return self.__map[x][y]
-		
-	def seekCoordinate(self, coordinate: (int, int)) -> str:
-		"""Return the state of the point at coordinate (x, y).
-		
-		'#' for wall, '.' for plain, and '-' for invalid queries (for example, out of range)
-		"""
-		x, y = coordinate[0], coordinate[1]
-		return self.seekCoordinate(x, y)
 
 	def currentPoint(self) -> (int, int):
 		"""Return current point coordinate (x, y).
@@ -52,7 +45,7 @@ class InteractMaze:
 		"""	
 		coordinate = list(self.currentPoint())
 		coordinate[1] -= 1
-		return self.seekCoordinate(tuple(coordinate))
+		return self.seekCoordinate(coordinate[0], coordinate[1])
 
 	def seekRight(self) -> str:
 		"""Return the state of the point to the right.
@@ -61,7 +54,7 @@ class InteractMaze:
 		"""
 		coordinate = list(self.currentPoint())
 		coordinate[1] += 1
-		return self.seekCoordinate(tuple(coordinate))
+		return self.seekCoordinate(coordinate[0], coordinate[1])
 
 	def seekUp(self) -> str:
 		"""Return the state of the point to the up side.
@@ -70,7 +63,7 @@ class InteractMaze:
 		"""
 		coordinate = list(self.currentPoint())
 		coordinate[0] -= 1
-		return self.seekCoordinate(tuple(coordinate))
+		return self.seekCoordinate(coordinate[0], coordinate[1])
 
 	def seekDown(self) -> str:
 		"""Return the state of the point to the down side.
@@ -79,7 +72,7 @@ class InteractMaze:
 		"""
 		coordinate = list(self.currentPoint())
 		coordinate[0] += 1
-		return self.seekCoordinate(tuple(coordinate))
+		return self.seekCoordinate(coordinate[0], coordinate[1])
 
 	def moveLeft(self) -> (bool, int, int):
 		"""Move to the point to the left, and return a tuple of three elements.
@@ -89,11 +82,13 @@ class InteractMaze:
 		The second and third element represent the coordinate of the new current point, remain the same when invalid.
 		"""
 		if self.seekLeft() == '#':
-			return (False, self.currentPoint[0], self.currentPoint[1])
+			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
 			self.__pipeFile.write("l")
-			self.currentPoint[1] -= 1
-			return (True, self.currentPoint[0], self.currentPoint[1])
+			self.__currentPoint = list(self.__currentPoint)
+			self.__currentPoint[1] -= 1
+			self.__currentPoint = tuple(self.__currentPoint)
+			return (True, self.__currentPoint[0], self.__currentPoint[1])
 
 	def moveRight(self) -> (bool, int, int):
 		"""Move to the point to the right, and return a tuple of three elements.
@@ -103,11 +98,13 @@ class InteractMaze:
 		The second and third element represent the coordinate of the new current point, remain the same when invalid.
 		"""
 		if self.seekRight() == '#':
-			return (False, self.currentPoint[0], self.currentPoint[1])
+			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
 			self.__pipeFile.write("r")
-			self.currentPoint[1] += 1
-			return (True, self.currentPoint[0], self.currentPoint[1])
+			self.__currentPoint = list(self.__currentPoint)
+			self.__currentPoint[1] += 1
+			self.__currentPoint = tuple(self.__currentPoint)
+			return (True, self.__currentPoint[0], self.__currentPoint[1])
 
 	def moveUp(self) -> (bool, int, int):
 		"""Move to the point to the up side, and return a tuple of three elements.
@@ -117,11 +114,13 @@ class InteractMaze:
 		The second and third element represent the coordinate of the new current point, remain the same when invalid.
 		"""
 		if self.seekLeft() == '#':
-			return (False, self.currentPoint[0], self.currentPoint[1])
+			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
 			self.__pipeFile.write("u")
-			self.currentPoint[0] -= 1
-			return (True, self.currentPoint[0], self.currentPoint[1])
+			self.__currentPoint = list(self.__currentPoint)
+			self.__currentPoint[0] -= 1
+			self.__currentPoint = tuple(self.__currentPoint)
+			return (True, self.__currentPoint[0], self.__currentPoint[1])
 
 	def moveDown(self) -> (bool, int, int):
 		"""Move to the point to the down side, and return a tuple of three elements.
@@ -131,11 +130,13 @@ class InteractMaze:
 		The second and third element represent the coordinate of the new current point, remain the same when invalid.
 		"""
 		if self.seekLeft() == '#':
-			return (False, self.currentPoint[0], self.currentPoint[1])
+			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
 			self.__pipeFile.write("d")
-			self.currentPoint[0] += 1
-			return (True, self.currentPoint[0], self.currentPoint[1])
+			self.__currentPoint = list(self.__currentPoint)
+			self.__currentPoint[0] += 1
+			self.__currentPoint = tuple(self.__currentPoint)
+			return (True, self.__currentPoint[0], self.__currentPoint[1])
 
 	def move(self, direction: str) -> (bool, int, int):
 		"""Move to the point to the given direction, and return a tuple of three elements.

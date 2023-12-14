@@ -22,20 +22,10 @@ pygame.init()
 screen = pygame.display.set_mode([screenWidth, screenHeight])
 pygame.display.set_caption(caption, icontitle = caption)
 
-renderMapThread = visualize.RenderMapThread(maze, blockWidth, screen)
+visualize.visualize(maze, blockWidth, screen)
+
 running = True
-while running:
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			running = False
-
-	if not renderMapThread.is_alive():
-		try:
-			renderMapThread.start()
-		except:
-			break
-
-TIMEOUT_SECONDS = 1
+TIMEOUT_SECONDS = 2
 
 while running:
 	for event in pygame.event.get():
@@ -43,20 +33,17 @@ while running:
 			running = False
 		elif event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_a:
-				print("fuck")
-				print("22")
-				process = multiprocessing.Process(target = user.main(interact.InteractMaze(maze, open("pipe.txt", "w"))))
-				process.join(TIMEOUT_SECONDS)
-				print("11")
-				print("letsee")
-				if process.is_alive():
-					print("Timeout")
-					process.terminate()
-					process.join()
+				print("Start running user's function to solve a maze")
+				userProcess = multiprocessing.Process(target = user.main, args = [interact.InteractMaze(maze, open("pipe.txt", "w"))])
+				userProcess.daemon = True
+				userProcess.start()
+				userProcess.join(timeout = TIMEOUT_SECONDS)
+				if userProcess.is_alive():
+					userProcess.kill()
+					userProcess.join()
+					print("Timeout!")
 				else:
-					print('end')
-
-				# renderMovementThread = movement.RenderMovementThread(maze, blockWidth, screen)
-				# renderMovementThread.start()
+					print("normal")
+					pass
 
 pygame.quit()

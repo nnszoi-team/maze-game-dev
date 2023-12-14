@@ -5,31 +5,27 @@ import threading
 import random
 import pygame
 
-class RenderMapThread(threading.Thread):
-	def __init__(self, maze: Maze, blockWidth: int, screen: pygame.Surface, group: None = None, target: Callable[..., object] | None = None, name: str | None = None, args: Iterable[Any] = ..., kwargs: Mapping[str, Any] | None = None, *, daemon: bool | None = None) -> None:
-		super().__init__(group, target, name, args, kwargs, daemon=daemon)
-		self.maze = maze
-		self.blockWidth = blockWidth
-		self.screen = screen
+def visualize(maze: Maze, blockWidth: int, screen: pygame.Surface):
+	block = []
 
-	def run(self):
+	for i in range(maze.rowNumber):
+		for j in range(maze.columnNumber):
+			if maze.map[i][j] == '#':
+				block.append(((255, 255, 255), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
+			elif maze.map[i][j] == 'S':
+				block.append(((255, 0, 0), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
+			elif maze.map[i][j] == 'T':
+				block.append(((0, 255, 0), pygame.Rect(i * blockWidth, j * blockWidth, blockWidth, blockWidth)))
 
-		block = []
+	random.shuffle(block)
 
-		for i in range(self.maze.rowNumber):
-			for j in range(self.maze.columnNumber):
-				if self.maze.map[i][j] == '#':
-					block.append(((255, 255, 255), pygame.Rect(i * self.blockWidth, j * self.blockWidth, self.blockWidth, self.blockWidth)))
-				elif self.maze.map[i][j] == 'S':
-					block.append(((255, 0, 0), pygame.Rect(i * self.blockWidth, j * self.blockWidth, self.blockWidth, self.blockWidth)))
-				elif self.maze.map[i][j] == 'T':
-					block.append(((0, 255, 0), pygame.Rect(i * self.blockWidth, j * self.blockWidth, self.blockWidth, self.blockWidth)))
+	for i in block:
+		try:
+			screen.fill(i[0], i[1])
+		except pygame.error:
+			break
+	pygame.display.flip()
 
-		random.shuffle(block)
+	pass
 
-		for i in block:
-			try:
-				self.screen.fill(i[0], i[1])
-			except pygame.error:
-				break
-		pygame.display.flip()
+
