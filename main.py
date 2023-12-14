@@ -1,14 +1,9 @@
 from maze import Maze
+from graphix import *
 import pygame
-import random
-import threading
-import graphix.visualize as visualize
-import graphix.movement as movement
-import signal
 import user
 import interact
 import multiprocessing
-import time
 from reloading import reloading
 
 maze = Maze(50, 50, 0)
@@ -23,10 +18,10 @@ pygame.init()
 screen = pygame.display.set_mode([screenWidth, screenHeight])
 pygame.display.set_caption(caption, icontitle = caption)
 
-visualize.visualize(maze, blockWidth, screen)
+visualize(maze, blockWidth, screen)
 
 running = True
-TIMEOUT_SECONDS = 2
+TIMEOUT_SECONDS = 1
 
 while running:
 	for event in pygame.event.get():

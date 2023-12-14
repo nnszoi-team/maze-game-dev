@@ -1,17 +1,9 @@
-import interact
 from reloading import reloading
-
-@reloading
-def another():
-	print("what!")
+import interact
+import time
 
 @reloading
 def main(M: interact.InteractMaze):
 	print("main()))")
-	while True:
-		another()
-		M.moveLeft()
-		M.moveRight()
-		M.moveUp()
-		M.moveDown()
+	time.sleep(0.5)
 	print("okokokko")
