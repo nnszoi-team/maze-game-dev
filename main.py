@@ -2,6 +2,7 @@ from maze import *
 from graphix import *
 import pygame, multiprocessing
 import user, interactor, importlib
+from constants import *
 
 maze = Maze(30, 30, 0)
 screenWidth = 0
@@ -18,8 +19,6 @@ pygame.display.set_caption(caption, icontitle = caption)
 visualize(maze, blockWidth, screen)
 
 running = True
-TIMEOUT_SECONDS = 4
-FPS = 30
 
 while running:
 	pygame.time.Clock().tick(FPS)
@@ -30,7 +29,7 @@ while running:
 			if event.key == pygame.K_a:
 				importlib.reload(user)
 				print("Start running user's function to solve a maze")
-				userProcess = multiprocessing.Process(target = user.main, args = [interactor.Interactor(maze, open("pipe.txt", "w"))])
+				userProcess = multiprocessing.Process(target = user.main, args = [interactor.Interactor(maze, "pipe.txt")])
 				userProcess.daemon = True
 				userProcess.start()
 				userProcess.join(timeout = TIMEOUT_SECONDS)

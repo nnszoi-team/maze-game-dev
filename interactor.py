@@ -2,16 +2,20 @@ import maze
 import os
 
 class Interactor:
-	def __init__(self, original: maze.Maze, pipeFileobject) -> None:
+	def __init__(self, original: maze.Maze, pipeFileName: str) -> None:
 		self.__rowNumber = original.rowNumber
 		self.__columnNumber = original.columnNumber
 		self.__map = original.map
 		self.__beginPoint = original.beginPoint
 		self.__currentPoint = original.beginPoint
 		self.__endPoint = original.endPoint
-		self.__pipeFile = pipeFileobject
-		print(self.__beginPoint, self.__currentPoint, self.__endPoint)
-		pass
+		self.__queue = []
+		self.__pipeFileName = pipeFileName
+
+	def __del__(self):
+		pipeFileObject = open(self.__pipeFileName, "w+")
+		for i in self.__queue:
+			pipeFileObject.write(i)
 
 	def seekCoordinate(self, x: int, y: int) -> str:
 		"""Return the state of the point at coordinate (x, y).
@@ -84,7 +88,7 @@ class Interactor:
 		if self.seekLeft() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__pipeFile.write("l")
+			self.__queue.append("l")
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[1] -= 1
 			self.__currentPoint = tuple(self.__currentPoint)
@@ -100,7 +104,7 @@ class Interactor:
 		if self.seekRight() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__pipeFile.write("r")
+			self.__queue.append("r")
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[1] += 1
 			self.__currentPoint = tuple(self.__currentPoint)
@@ -113,10 +117,10 @@ class Interactor:
 		
 		The second and third element represent the coordinate of the new current point, remain the same when invalid.
 		"""
-		if self.seekLeft() == '#':
+		if self.seekUp() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__pipeFile.write("u")
+			self.__queue.append("u")
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[0] -= 1
 			self.__currentPoint = tuple(self.__currentPoint)
@@ -129,10 +133,10 @@ class Interactor:
 
 		The second and third element represent the coordinate of the new current point, remain the same when invalid.
 		"""
-		if self.seekLeft() == '#':
+		if self.seekDown() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__pipeFile.write("d")
+			self.__queue.append("d")
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[0] += 1
 			self.__currentPoint = tuple(self.__currentPoint)
