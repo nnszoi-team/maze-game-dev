@@ -16,7 +16,7 @@ pygame.init()
 screen = pygame.display.set_mode([screenWidth, screenHeight])
 pygame.display.set_caption(caption, icontitle = caption)
 
-visualize(maze, blockWidth, screen)
+visualizeMaze(maze, blockWidth, screen)
 
 running = True
 
@@ -29,7 +29,8 @@ while running:
 			if event.key == pygame.K_a:
 				importlib.reload(user)
 				print("Start running user's function to solve a maze")
-				userProcess = multiprocessing.Process(target = user.main, args = [interactor.Interactor(maze, "pipe.txt")])
+				userInteractor = interactor.Interactor(maze, "pipe.txt")
+				userProcess = multiprocessing.Process(target = user.main, args = [userInteractor])
 				userProcess.daemon = True
 				userProcess.start()
 				userProcess.join(timeout = TIMEOUT_SECONDS)

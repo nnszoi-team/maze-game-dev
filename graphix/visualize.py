@@ -2,7 +2,7 @@ from maze import Maze
 import random
 import pygame
 
-def visualize(maze: Maze, blockWidth: int, screen: pygame.Surface):
+def visualizeMaze(maze: Maze, blockWidth: int, screen: pygame.Surface):
 	"""Visualize the maze using pygame lib.
 	"""
 	block = []

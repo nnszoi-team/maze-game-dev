@@ -1,5 +1,4 @@
 import maze
-import os
 
 class Interactor:
 	def __init__(self, original: maze.Maze, pipeFileName: str) -> None:
@@ -9,13 +8,7 @@ class Interactor:
 		self.__beginPoint = original.beginPoint
 		self.__currentPoint = original.beginPoint
 		self.__endPoint = original.endPoint
-		self.__queue = []
-		self.__pipeFileName = pipeFileName
-
-	def __del__(self):
-		pipeFileObject = open(self.__pipeFileName, "w+")
-		for i in self.__queue:
-			pipeFileObject.write(i)
+		self.__pipeFile = open(pipeFileName, "w")
 
 	def seekCoordinate(self, x: int, y: int) -> str:
 		"""Return the state of the point at coordinate (x, y).
@@ -88,7 +81,8 @@ class Interactor:
 		if self.seekLeft() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__queue.append("l")
+			self.__pipeFile.write("L")
+			self.__pipeFile.flush()
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[1] -= 1
 			self.__currentPoint = tuple(self.__currentPoint)
@@ -104,7 +98,8 @@ class Interactor:
 		if self.seekRight() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__queue.append("r")
+			self.__pipeFile.write("R")
+			self.__pipeFile.flush()
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[1] += 1
 			self.__currentPoint = tuple(self.__currentPoint)
@@ -120,7 +115,8 @@ class Interactor:
 		if self.seekUp() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__queue.append("u")
+			self.__pipeFile.write("U")
+			self.__pipeFile.flush()
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[0] -= 1
 			self.__currentPoint = tuple(self.__currentPoint)
@@ -136,7 +132,8 @@ class Interactor:
 		if self.seekDown() == '#':
 			return (False, self.__currentPoint[0], self.__currentPoint[1])
 		else:
-			self.__queue.append("d")
+			self.__pipeFile.write("D")
+			self.__pipeFile.flush()
 			self.__currentPoint = list(self.__currentPoint)
 			self.__currentPoint[0] += 1
 			self.__currentPoint = tuple(self.__currentPoint)

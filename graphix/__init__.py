@@ -1,2 +1,2 @@
 from .movement import *
-from .visualize_maze import *
+from .visualize import *
