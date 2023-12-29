@@ -1,72 +1,79 @@
 import pygame, sys
 import time
-import os
 
-from printMap import node, edge, background
-
-from printMap import screenWidth, screenHeight, blockWidth, background_color
+from constants import BLOCK_WIDTH, BACKGROUND_COLOR, SHORTEST_PATH_SLEEP_TIME
+from maze import Maze
 
 
-class character:
-    def __init__(self, parent=None, x=0, y=0):
+class Character:
+    def __init__(self, parent, maze: Maze):
         self.parent = parent
-        self.x = x
-        self.y = y
+        self.coordinate = maze.startingPoint
+        self.__maze = maze
 
-    def moveUp(self, updated=True, cleared=True):
-        if self.y == 0:
+    def __move_by_vector(self, vector: [int, int], cleared=True):
+        if (
+            self.coordinate[0] + vector[0] < 0
+            or self.coordinate[0] + vector[0] >= self.__maze.rowNumber
+        ):
             return self.parent.demoQuit()
-        checker = pygame.Rect(
-            self.x * 2 * blockWidth + blockWidth,
-            self.y * 2 * blockWidth + blockWidth,
-            blockWidth,
-            blockWidth,
-        )
-
-        if cleared == True:
-            self.parent.screen.fill(background_color, checker)
-            pygame.display.update(
-                pygame.Rect(
-                    self.x * 2 * blockWidth + blockWidth,
-                    self.y * 2 * blockWidth + blockWidth,
-                    blockWidth,
-                    blockWidth,
-                )
-            )
+        if (
+            self.coordinate[1] + vector[1] < 0
+            or self.coordinate[1] + vector[1] >= self.__maze.columnNumber
+        ):
+            return self.parent.demoQuit()
+        if (
+            self.__maze.matrix[self.coordinate[0] + vector[0]][
+                self.coordinate[1] + vector[1]
+            ]
+            == 1
+        ):
+            return self.parent.demoQuit()
 
         newImage = pygame.image.load("character.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
+        newImage = pygame.transform.scale(newImage, (BLOCK_WIDTH, BLOCK_WIDTH))
 
-        beginner = node(self.x, self.y)
-        ender = node(self.x, self.y - 1)
-        IsNotFind = True
-        for line in self.parent.edges:
-            if (line.dx == beginner and line.dy == ender) or (
-                line.dy == beginner and line.dx == ender
-            ):
-                IsNotFind = False
-                break
-        if IsNotFind:
-            # print('!')
-            return self.parent.demoQuit()
-        
-        if self.parent.prev[self.x][self.y-1] == node(0,0):
-            self.parent.prev[self.x][self.y-1]=node(self.x,self.y)
+        if cleared == True:
+            self.parent.screen.fill(
+                BACKGROUND_COLOR,
+                pygame.Rect(
+                    self.coordinate[1] * BLOCK_WIDTH,
+                    self.coordinate[0] * BLOCK_WIDTH,
+                    BLOCK_WIDTH,
+                    BLOCK_WIDTH,
+                ),
+            )
+            pygame.display.update(
+                pygame.Rect(
+                    self.coordinate[1] * BLOCK_WIDTH,
+                    self.coordinate[0] * BLOCK_WIDTH,
+                    BLOCK_WIDTH,
+                    BLOCK_WIDTH,
+                )
+            )
+        if self.parent.prev[self.coordinate[0] + vector[0]][
+            self.coordinate[1] + vector[1]
+        ] == [0, 0]:
+            self.parent.prev[self.coordinate[0] + vector[0]][
+                self.coordinate[1] + vector[1]
+            ] = self.coordinate
+
+        self.coordinate[0] += vector[0]
+        self.coordinate[1] += vector[1]
 
         self.parent.screen.blit(
             newImage,
             (
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth,
+                self.coordinate[1] * BLOCK_WIDTH,
+                self.coordinate[0] * BLOCK_WIDTH,
             ),
         )
-        # pygame.display.flip()
         pygame.display.update(
             pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth,
-                blockWidth,
-                blockWidth,
+                self.coordinate[1] * BLOCK_WIDTH,
+                self.coordinate[0] * BLOCK_WIDTH,
+                BLOCK_WIDTH,
+                BLOCK_WIDTH,
             )
         )
         time.sleep(self.parent.moveInterval)
@@ -74,467 +81,139 @@ class character:
             pygame.quit()
             sys.exit()
 
-        if cleared == True:
-            self.parent.screen.fill(
-                background_color,
-                (
-                    self.x * 2 * blockWidth + blockWidth,
-                    self.y * 2 * blockWidth,
-                    blockWidth,
-                    blockWidth,
-                ),
-            )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        # pygame.display.flip()
+    def moveUp(self, cleared=True):
+        return self.__move_by_vector([-1, 0], cleared)
 
-        self.y -= 1
-        self.parent.screen.blit(
-            newImage,
-            (
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-            ),
-        )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        # if updated:
-        # pygame.display.flip()
-        time.sleep(self.parent.moveInterval)
-        if pygame.event.peek(pygame.QUIT):
-            pygame.quit()
-            sys.exit()
+    def moveDown(self, cleared=True):
+        return self.__move_by_vector([1, 0], cleared)
 
-    def moveDown(self, updated=True, cleared=True):
-        if self.y == self.parent.column - 1:
+    def moveLeft(self, cleared=True):
+        return self.__move_by_vector([0, -1], cleared)
+
+    def moveRight(self, cleared=True):
+        return self.__move_by_vector([0, 1], cleared)
+
+    def move(self, direction: str, cleared=True):
+        if direction == "Up":
+            return self.moveUp(cleared)
+        if direction == "Down":
+            return self.moveDown(cleared)
+        if direction == "Left":
+            return self.moveLeft(cleared)
+        if direction == "Right":
+            return self.moveRight(cleared)
+        return self.parent.demoQuit()
+
+    def __seek_by_vector(self, vector: [int, int]):
+        if (
+            self.coordinate[0] + vector[0] < 0
+            or self.coordinate[0] + vector[0] >= self.__maze.rowNumber
+        ):
             return self.parent.demoQuit()
-
-        checker = pygame.Rect(
-            self.x * 2 * blockWidth + blockWidth,
-            self.y * 2 * blockWidth + blockWidth,
-            blockWidth,
-            blockWidth,
-        )
-
-        if cleared == True:
-            self.parent.screen.fill(background_color, checker)
-            pygame.display.update(
-                pygame.Rect(
-                    self.x * 2 * blockWidth + blockWidth,
-                    self.y * 2 * blockWidth + blockWidth,
-                    blockWidth,
-                    blockWidth,
-                )
-            )
-
-        newImage = pygame.image.load("character.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
-
-        beginner = node(self.x, self.y)
-        ender = node(self.x, self.y + 1)
-        IsNotFind = True
-        for line in self.parent.edges:
-            if (line.dx == beginner and line.dy == ender) or (
-                line.dy == beginner and line.dx == ender
-            ):
-                IsNotFind = False
-                break
-        if IsNotFind:
+        if (
+            self.coordinate[1] + vector[1] < 0
+            or self.coordinate[1] + vector[1] >= self.__maze.columnNumber
+        ):
             return self.parent.demoQuit()
-        
-        if self.parent.prev[self.x][self.y+1] == node(0,0):
-            self.parent.prev[self.x][self.y+1]=node(self.x,self.y)
-
-        self.y += 1
-        self.parent.screen.blit(
-            newImage,
-            (
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth,
-            ),
-        )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        time.sleep(self.parent.moveInterval)
-
-        if cleared == True:
-            self.parent.screen.fill(
-                background_color,
-                (
-                    self.x * 2 * blockWidth + blockWidth,
-                    self.y * 2 * blockWidth,
-                    blockWidth,
-                    blockWidth,
-                ),
-            )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-
-        self.parent.screen.blit(
-            newImage,
-            (
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-            ),
-        )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        # if updated:
-        # pygame.display.flip()
-        time.sleep(self.parent.moveInterval)
-        if pygame.event.peek(pygame.QUIT):
-            pygame.quit()
-
-    def moveLeft(self, updated=True, cleared=True):
-        if self.x == 0:
-            return self.parent.demoQuit()
-        # print('?')
-        checker = pygame.Rect(
-            self.x * 2 * blockWidth + blockWidth,
-            self.y * 2 * blockWidth + blockWidth,
-            blockWidth,
-            blockWidth,
-        )
-        if cleared == True:
-            self.parent.screen.fill(background_color, checker)
-            pygame.display.update(
-                pygame.Rect(
-                    self.x * 2 * blockWidth + blockWidth,
-                    self.y * 2 * blockWidth + blockWidth,
-                    blockWidth,
-                    blockWidth,
-                )
-            )
-
-        newImage = pygame.image.load("character.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
-
-        beginner = node(self.x, self.y)
-        ender = node(self.x - 1, self.y)
-        IsNotFind = True
-        for line in self.parent.edges:
-            if (line.dx == beginner and line.dy == ender) or (
-                line.dy == beginner and line.dx == ender
-            ):
-                IsNotFind = False
-                break
-        if IsNotFind:
-            return self.parent.demoQuit()
-        
-        if self.parent.prev[self.x-1][self.y]== node(0,0):
-            self.parent.prev[self.x-1][self.y]=node(self.x,self.y)
-
-        self.parent.screen.blit(
-            newImage,
-            (
-                self.x * 2 * blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-            ),
-        )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        time.sleep(self.parent.moveInterval)
-
-        if cleared == True:
-            self.parent.screen.fill(
-                background_color,
-                (
-                    self.x * 2 * blockWidth,
-                    self.y * 2 * blockWidth + blockWidth,
-                    blockWidth,
-                    blockWidth,
-                ),
-            )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-
-        self.x -= 1
-        self.parent.screen.blit(
-            newImage,
-            (
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-            ),
-        )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        # if updated:
-        # pygame.display.flip()
-        time.sleep(self.parent.moveInterval)
-        if pygame.event.peek(pygame.QUIT):
-            pygame.quit()
-            sys.exit()
-
-    def moveRight(self, updated=True, cleared=True):
-        if self.x == self.parent.row - 1:
-            return self.parent.demoQuit()
-        checker = pygame.Rect(
-            self.x * 2 * blockWidth + blockWidth,
-            self.y * 2 * blockWidth + blockWidth,
-            blockWidth,
-            blockWidth,
-        )
-        if cleared == True:
-            self.parent.screen.fill(background_color, checker)
-            pygame.display.update(
-                pygame.Rect(
-                    self.x * 2 * blockWidth + blockWidth,
-                    self.y * 2 * blockWidth + blockWidth,
-                    blockWidth,
-                    blockWidth,
-                )
-            )
-
-        newImage = pygame.image.load("character.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
-
-        beginner = node(self.x, self.y)
-        ender = node(self.x + 1, self.y)
-        IsNotFind = True
-        for line in self.parent.edges:
-            if (line.dx == beginner and line.dy == ender) or (
-                line.dy == beginner and line.dx == ender
-            ):
-                IsNotFind = False
-                break
-        if IsNotFind:
-            # print('!!!')
-            return self.parent.demoQuit()
-        
-        if self.parent.prev[self.x+1][self.y] == node(0,0):
-            self.parent.prev[self.x+1][self.y]=node(self.x,self.y)
-
-        self.x += 1
-        self.parent.screen.blit(
-            newImage,
-            (
-                self.x * 2 * blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-            ),
-        )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        time.sleep(self.parent.moveInterval)
-
-        if cleared == True:
-            self.parent.screen.fill(
-                background_color,
-                (
-                    self.x * 2 * blockWidth,
-                    self.y * 2 * blockWidth + blockWidth,
-                    blockWidth,
-                    blockWidth,
-                ),
-            )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-
-        self.parent.screen.blit(
-            newImage,
-            (
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-            ),
-        )
-        pygame.display.update(
-            pygame.Rect(
-                self.x * 2 * blockWidth + blockWidth,
-                self.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
-            )
-        )
-        # if updated:
-        # pygame.display.flip()
-        time.sleep(self.parent.moveInterval)
-        if pygame.event.peek(pygame.QUIT):
-            pygame.quit()
-            sys.exit()
-
-    def clears(self):
-        self.parent.screen.fill(
-            background_color, (self.x, self.y, blockWidth, blockWidth)
-        )
-
-
-class BackMap:
-    def __init__(self, moveInterval=0.1):
-        self.row = 0
-        self.column = 0
-        self.counts = 0
-        self.edges = []
-        self.blocks = []
-        self.srtx = 0
-        self.srty = 0
-        self.finx = 0
-        self.finy = 0
-        self.moveInterval = moveInterval
-        self.characters = []
-        self.prev=[]
-
-        self.screen = None
-
-        self.backGround = background(
-            self.screen, self.srtx, self.srty, self.finx, self.finy, []
-        )
-        # character = pygame.Rect(0, 0, blockWidth, blockWidth)
-        # end = pygame.Rect(0, 0, blockWidth, blockWidth)
-
-    def readFile(self):
-        f = open("maze.out", "r")
-        self.row, self.column = [int(i) for i in f.readline().split()]
-        self.counts = int(f.readline())
-        self.srtx, self.srty, self.finx, self.finy = [
-            int(i) for i in f.readline().split()
+        return self.__maze.matrix[self.coordinate[0] + vector[0]][
+            self.coordinate[1] + vector[1]
         ]
-        for i in range(self.row):
-            prever=[]
-            for j in range(self.column):
-                prever.append(node())
-            self.prev.append(prever)
-            
-        for j in range(self.counts):
-            x1, y1, x2, y2 = [int(i) for i in f.readline().split()]
-            start = node(x1, y1)
-            endl = node(x2, y2)
-            self.edges.append(edge(start, endl))
-            # print(x1,y1,x2,y2)
-            # print((x1+x2)*blockWidth,(y1+y2)*blockWidth)
 
-            # for element in edges:
-            # print(element.dx.x,element.dx.y,element.dy.x,element.dy.y)
-        f.close()
+    def seekUp(self):
+        return self.__seek_by_vector([-1, 0])
 
-    def drawStarted(self):
+    def seekDown(self):
+        return self.__seek_by_vector([1, 0])
+
+    def seekLeft(self):
+        return self.__seek_by_vector([0, -1])
+
+    def seekRight(self):
+        return self.__seek_by_vector([0, 1])
+
+    def seek(self, direction: str):
+        print(f"seek {direction}")
+        if direction == "Up":
+            return self.seekUp()
+        if direction == "Down":
+            return self.seekDown()
+        if direction == "Left":
+            return self.seekLeft()
+        if direction == "Right":
+            return self.seekRight()
+        return self.parent.demoQuit()
+
+
+class Background:
+    def __init__(self, maze: Maze, moveInterval: float):
+        self.__maze = maze
+        self.moveInterval = moveInterval
+        self.prev = [
+            [[0, 0] for _ in range(maze.columnNumber)] for _ in range(maze.rowNumber)
+        ]
+        self.startingPointXCoordinate = maze.startingPoint[0]
+        self.startingPointYCoordinate = maze.startingPoint[1]
+        self.characters = [Character(self, maze)]
+
+    def drawPoint(self, coordinate: [int, int]):
         newImage = pygame.image.load("endl.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
+        newImage = pygame.transform.scale(newImage, (BLOCK_WIDTH, BLOCK_WIDTH))
         self.screen.blit(
             newImage,
-            (self.srtx * 2* blockWidth + blockWidth, self.srty * 2* blockWidth + blockWidth),
+            (
+                coordinate[1] * BLOCK_WIDTH,
+                coordinate[0] * BLOCK_WIDTH,
+            ),
         )
         pygame.display.update(
             pygame.Rect(
-                self.srtx * 2* blockWidth + blockWidth,
-                self.srty * 2* blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
+                coordinate[1] * BLOCK_WIDTH,
+                coordinate[0] * BLOCK_WIDTH,
+                BLOCK_WIDTH,
+                BLOCK_WIDTH,
             )
         )
-        
-    def drawWay(self):
+
+    def drawShortestPath(self):
         newImage = pygame.image.load("endl.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
-        dx = self.finx
-        dy = self.finy
-        while dx != self.srtx or dy != self.srty:
+        newImage = pygame.transform.scale(newImage, (BLOCK_WIDTH, BLOCK_WIDTH))
+        currentPoint = self.__maze.endPoint
+        while currentPoint != self.__maze.startingPoint:
             self.screen.blit(
                 newImage,
-                (dx * 2 * blockWidth + blockWidth, dy * 2 * blockWidth + blockWidth),
+                (currentPoint[0] * BLOCK_WIDTH, currentPoint[1] * BLOCK_WIDTH),
             )
             pygame.display.update(
                 pygame.Rect(
-                    dx * 2 * blockWidth + blockWidth,
-                    dy * 2 * blockWidth + blockWidth,
-                    blockWidth,
-                    blockWidth,
+                    currentPoint[1] * BLOCK_WIDTH,
+                    currentPoint[0] * BLOCK_WIDTH,
+                    BLOCK_WIDTH,
+                    BLOCK_WIDTH,
                 )
             )
-            time.sleep(0.05)
-            last = self.prev[dx][dy]
-            self.screen.blit(
-                newImage, ((last.x + dx + 1) * blockWidth, (last.y + dy + 1) * blockWidth)
-            )
-            pygame.display.update(
-                pygame.Rect(
-                    (last.x + dx + 1) * blockWidth,
-                    (last.y + dy + 1) * blockWidth,
-                    blockWidth,
-                    blockWidth,
-                )
-            )
-            time.sleep(0.05)
-            dx = last.x
-            dy = last.y
+            time.sleep(SHORTEST_PATH_SLEEP_TIME)
+            currentPoint = self.prev[currentPoint[0]][currentPoint[1]]
         self.screen.blit(
             newImage,
-            (self.srtx * 2 * blockWidth + blockWidth, self.srty * 2 * blockWidth + blockWidth),
+            (
+                self.__maze.startingPoint[1] * BLOCK_WIDTH,
+                self.__maze.startingPoint[0] * BLOCK_WIDTH,
+            ),
         )
         pygame.display.update(
             pygame.Rect(
-                self.srtx * 2 * blockWidth + blockWidth,
-                self.srty * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
+                self.__maze.startingPoint[1] * BLOCK_WIDTH,
+                self.__maze.startingPoint[0] * BLOCK_WIDTH,
+                BLOCK_WIDTH,
+                BLOCK_WIDTH,
             )
         )
 
-    def demoQuit(self, txt="Runtime Error"):
-        self.drawStarted()
-        # return
+    def demoQuit(self, textContent="Runtime Error"):
         font = pygame.font.Font("consola.ttf", 100)
-        # font.bold = True
-        textSurface = font.render(txt, True, (255, 221, 85))
-        self.drawWay()
+        textSurface = font.render(textContent, True, (255, 221, 85))
+        if textContent == "You Win!":
+            self.drawShortestPath()
         self.screen.blit(textSurface, (50, 50))
         pygame.display.flip()
         running = True
@@ -543,37 +222,86 @@ class BackMap:
                 running = False
         pygame.quit()
 
-    def moveUp(self, idx=0, updated=True, cleared=True):
-        self.characters[idx].moveUp(updated, cleared)
-        self.drawStarted()
+    def moveUp(self, index=0, cleared=True):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        self.characters[index].moveUp(cleared)
+        self.drawPoint([self.startingPointXCoordinate, self.startingPointYCoordinate])
 
-    def moveDown(self, idx=0, updated=True, cleared=True):
-        self.characters[idx].moveDown(updated, cleared)
-        self.drawStarted()
+    def moveDown(self, index=0, cleared=True):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        self.characters[index].moveDown(cleared)
+        self.drawPoint([self.startingPointXCoordinate, self.startingPointYCoordinate])
 
-    def moveLeft(self, idx=0, updated=True, cleared=True):
-        self.characters[idx].moveLeft(updated, cleared)
-        self.drawStarted()
+    def moveLeft(self, index=0, cleared=True):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        self.characters[index].moveLeft(cleared)
+        self.drawPoint([self.startingPointXCoordinate, self.startingPointYCoordinate])
 
-    def moveRight(self, idx=0, updated=True, cleared=True):
-        self.characters[idx].moveRight(updated, cleared)
-        self.drawStarted()
+    def moveRight(self, index=0, cleared=True):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        self.characters[index].moveRight(cleared)
+        self.drawPoint([self.startingPointXCoordinate, self.startingPointYCoordinate])
 
-    def init(self, spawnNewMap=True):
-        if spawnNewMap:
-            os.system("CreateMap.exe")
-        self.readFile()
-        self.characters.append(character(self, self.srtx, self.srty))
-        # backGround.drawEdge(row, column)
+    def move(self, index=0, direction: str = "", cleared=True):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        self.characters[index].move(direction, cleared)
+        print(self.__maze.startingPoint)
+        self.drawPoint([self.startingPointXCoordinate, self.startingPointYCoordinate])
 
-    def run(self, checker=character()):
-        if checker.x != self.finx or checker.y != self.finy:
+    def seekUp(self, index=0):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        return self.characters[index].seekUp()
+
+    def seekDown(self, index=0):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        return self.characters[index].seekDown()
+
+    def seekLeft(self, index=0):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        return self.characters[index].seekLeft()
+
+    def seekRight(self, index=0):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        return self.characters[index].seekRight()
+
+    def seek(self, index=0, direction: str = ""):
+        if index >= len(self.characters):
+            return self.demoQuit()
+        return self.characters[index].seek(direction)
+
+    def run(self, checker: Character):
+        if checker.coordinate != self.__maze.endPoint:
             return self.demoQuit("You Lose!")
         self.demoQuit("You Win!")
 
-    def spawnNewCharacter(self, x=0, y=0):
-        self.characters.append(character(self, x, y))
+    def spawnNewCharacter(self, x: int, y: int):
+        self.characters.append(Character(self, x, y))
 
-    def clears(self):
-        self.screen.fill(background_color)
-        self.init()
+    def rowNumber(self):
+        return self.__maze.rowNumber
+
+    def columnNumber(self):
+        return self.__maze.columnNumber
+
+    def startingPoint(self):
+        return self.__maze.startingPoint
+
+    def endPoint(self):
+        return self.__maze.endPoint
+
+    def at(self, coordinate: [int, int]):
+        i, j = coordinate
+        if i < 0 or i >= self.rowNumber:
+            return self.demoQuit()
+        if j < 0 or j >= self.columnNumber:
+            return self.demoQuit()
+        return self.__maze.matrix[i][j]

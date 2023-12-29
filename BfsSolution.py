@@ -2,7 +2,7 @@ from queue import Queue
 import pygame
 import time
 
-from printMap import node, edge, background, image, blockWidth
+from visualizer import Node, Edge, Visualizer, image, BLOCK_WIDTH
 
 
 row = 0
@@ -35,8 +35,8 @@ def readFile():
     srtx, srty, finx, finy = [int(i) for i in f.readline().split()]
     for j in range(counts):
         x1, y1, x2, y2 = [int(i) for i in f.readline().split()]
-        start = node(x1, y1)
-        endl = node(x2, y2)
+        start = Node(x1, y1)
+        endl = Node(x2, y2)
         edges[x1][y1].append(endl)
         edges[x2][y2].append(start)
     f.close()
@@ -67,54 +67,57 @@ def bfs():
                 spawnNewCharacter(now.x, now.y)
                 Main.prev[edge.x][edge.y] = now
                 if edge.x == now.x - 1:
-                    moveLeft(len(Main.characters) - 1,False, False)
+                    moveLeft(len(Main.characters) - 1, False, False)
                 elif edge.x == now.x + 1:
-                    moveRight(len(Main.characters) - 1,False, False)
+                    moveRight(len(Main.characters) - 1, False, False)
                 elif edge.y == now.y - 1:
-                    moveUp(len(Main.characters) - 1,False, False)
+                    moveUp(len(Main.characters) - 1, False, False)
                 elif edge.y == now.y + 1:
-                    moveDown(len(Main.characters) - 1,False, False)
+                    moveDown(len(Main.characters) - 1, False, False)
                 que.put(Main.characters[len(Main.characters) - 1])
             if available == 0 or (now.x == finx and now.y == finy):
                 stayer.put(now)
         Main.characters.clear()
         copyQue = que
         newImage = pygame.image.load("endl.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
+        newImage = pygame.transform.scale(newImage, (BLOCK_WIDTH, BLOCK_WIDTH))
         while copyQue.empty() == False:
             Main.characters.append(copyQue.get())
         Main.screen.blit(
             newImage,
-            (finx * 2 * blockWidth + blockWidth, finy * 2 * blockWidth + blockWidth),
+            (
+                finx * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
+                finy * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
+            ),
         )
         pygame.display.update(
             pygame.Rect(
-                finx * 2 * blockWidth + blockWidth,
-                finy * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
+                finx * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
+                finy * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
+                BLOCK_WIDTH,
+                BLOCK_WIDTH,
             )
         )
 
     Main.characters.clear()
     while stayer.empty() == False:
         newImage = pygame.image.load("character.png").convert()
-        newImage = pygame.transform.scale(newImage, (blockWidth, blockWidth))
+        newImage = pygame.transform.scale(newImage, (BLOCK_WIDTH, BLOCK_WIDTH))
         value = stayer.get()
         Main.screen.blit(
             newImage,
             (
-                value.x * 2 * blockWidth + blockWidth,
-                value.y * 2 * blockWidth + blockWidth,
+                value.x * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
+                value.y * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
             ),
         )
         Main.characters.append(value)
         pygame.display.update(
             pygame.Rect(
-                value.x * 2 * blockWidth + blockWidth,
-                value.y * 2 * blockWidth + blockWidth,
-                blockWidth,
-                blockWidth,
+                value.x * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
+                value.y * 2 * BLOCK_WIDTH + BLOCK_WIDTH,
+                BLOCK_WIDTH,
+                BLOCK_WIDTH,
             )
         )
 

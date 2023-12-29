@@ -1,4 +1,3 @@
-
 row = 0
 column = 0
 counts = 0
@@ -8,6 +7,7 @@ finx = 0
 finy = 0
 blocks = []
 turn = "Down"
+
 
 def readFile():
     global blocks
@@ -29,6 +29,7 @@ def readFile():
             line.append(memory[i][j])
         blocks.append(line)
     f.close()
+
 
 def RightWay():
     global turn
@@ -79,4 +80,4 @@ def RightWay():
 
 readFile()
 RightWay()
-#Main.run(Main.characters[0])
+# Main.run(Main.characters[0])
